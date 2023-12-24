@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useReducer } from "react";
+import React, { useEffect, useState, useReducer, useContext } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
-import { act } from "react-dom/test-utils";
+import authContext from "../../store/authContext";
+import Input from "../Input/Input";
 
 const emailReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
@@ -27,12 +28,11 @@ const passReducer = (state, action) => {
 };
 
 const Login = (props) => {
-  // const [enteredEmail, setEnteredEmail] = useState("");
-  // const [emailIsValid, setEmailIsValid] = useState();
-  // const [enteredPassword, setEnteredPassword] = useState("");
-  // const [passwordIsValid, setPasswordIsValid] = useState();
+  const ctx = useContext(authContext);
+
   const [collegeName, setCollegeName] = useState("");
   const [collegeIsValid, setCollegeIsValid] = useState();
+
   const [formIsValid, setFormIsValid] = useState(false);
 
   const [emailState, dispatchEmail] = useReducer(emailReducer, {
@@ -44,9 +44,9 @@ const Login = (props) => {
     value: "",
     isValid: false,
   });
+
   useEffect(() => {
     const id = setTimeout(() => {
-      console.log("useEffect");
       setFormIsValid(
         emailState.value?.trim().length > 6 &&
           emailState?.value?.includes("@") &&
@@ -55,12 +55,10 @@ const Login = (props) => {
     }, 500);
     return () => {
       clearTimeout(id);
-      console.log("cleanup");
     };
-  }, [emailState, password]);
+  }, [emailState.value, password.value]);
 
   const emailChangeHandler = (event) => {
-    // setEnteredEmail(event.target.value);
     dispatchEmail({ type: "USER_INPUT", val: event.target.value });
   };
 
@@ -86,52 +84,44 @@ const Login = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(emailState.value, password.value);
+    ctx.onLogin(emailState.value, password.value);
   };
 
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
+        <Input
+          id="email"
+          label="E-Mail"
+          type="email"
+          isValid={emailState.isValid}
+          value={emailState.value}
+          onChange={emailChangeHandler}
+          onBlur={validateEmailHandler}
+        ></Input>
+        <Input
+          id="password"
+          label="Password"
+          type="password"
+          isValid={password.isValid}
+          value={password.value}
+          onChange={passwordChangeHandler}
+          onBlur={validatePasswordHandler}
+        ></Input>
         <div
           className={`${classes.control} ${
-            emailState.isValid === false ? classes.invalid : ""
+            collegeIsValid === false ? classes.invalid : ""
           }`}
         >
-          <label htmlFor="email">E-Mail</label>
-          <input
-            type="email"
-            id="email"
-            value={emailState.value}
-            onChange={emailChangeHandler}
-            onBlur={validateEmailHandler}
-          />
-        </div>
-        <div
-          className={`${classes.control} ${
-            password.isValid === false ? classes.invalid : ""
-          }`}
-        >
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password.value}
-            onChange={passwordChangeHandler}
-            onBlur={validatePasswordHandler}
-          />
-          <div
-            className={`${classes.control} ${
-              collegeIsValid === false ? classes.invalid : ""
-            }`}
-          ></div>
-          <label htmlFor="college">college</label>
-          <input
-            type="text"
+          <Input
             id="college"
+            label="College"
+            type="text"
+            isValid={collegeIsValid}
             value={collegeName}
             onChange={collegeHandler}
             onBlur={validateCollegeHandler}
-          ></input>
+          ></Input>
         </div>
         <div className={classes.actions}>
           <Button type="submit" className={classes.btn} disabled={!formIsValid}>

@@ -1,39 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 
 import Login from "./components/Login/Login";
 import Home from "./components/Home/Home";
 import MainHeader from "./components/MainHeader/MainHeader";
+import authContext from "./store/authContext";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const status = localStorage.getItem("isLoggedIn");
-    if (status == 1) {
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  const loginHandler = (email, password) => {
-    // We should of course check email and password
-    // But it's just a dummy/ demo anyways
-    localStorage.setItem("isLoggedIn", 1);
-    setIsLoggedIn(true);
-  };
-
-  const logoutHandler = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem("isLoggedIn");
-  };
-
+  const ctx = useContext(authContext);
+  console.log(ctx);
   return (
-    <React.Fragment>
-      <MainHeader isAuthenticated={isLoggedIn} onLogout={logoutHandler} />
+    <>
+      <MainHeader
+        isAuthenticated={ctx.isLoggedIn}
+        onLogout={ctx.logoutHandler}
+      />
       <main>
-        {!isLoggedIn && <Login onLogin={loginHandler} />}
-        {isLoggedIn && <Home onLogout={logoutHandler} />}
+        {!ctx.isLoggedIn && <Login onLogin={ctx.loginHandler} />}
+        {ctx.isLoggedIn && <Home onLogout={ctx.logoutHandler} />}
       </main>
-    </React.Fragment>
+    </>
   );
 }
 
